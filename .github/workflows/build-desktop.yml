@@ -25,7 +25,10 @@ jobs:
             bundles: nsis
           - os: macos-14
             target: aarch64-apple-darwin
-            bundles: dmg
+            # .app first (signed); the dmg is packaged in a later step after
+            # the signature is verified, because the dmg bundler removes the
+            # .app staging copy.
+            bundles: app
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -74,18 +77,18 @@ jobs:
       - name: Verify macOS code signature (Gatekeeper damaged-app regression)
         if: runner.os == 'macOS'
         run: |
-          APP="$(
-            find src-tauri/target/release/bundle -maxdepth 4 \
-              -name "*.app" -type d | head -1
-          )"
-          echo "verifying: $APP"
-          codesign -dv "$APP" | grep -E "Identifier|Signature|flags" || true
-          codesign --verify --deep --strict "$APP"
-          echo "codesign --verify --deep --strict: OK"
-          # The quarantine is added by the browser at download time; the app
-          # itself must be signed. spctl reports 'rejected' for ad-hoc, which
-          # is expected — the regression guard is codesign verification above.
-          spctl -a -vv "$APP" || true
+          set -euo pipefail
+          APP="$(find src-tauri/target/release/bundle -maxdepth 4 \
+            -name '*.app' -type d | head -1)"
+          echo "verifying: ${APP}"
+          test -n "${APP}"
+          codesign -dv "${APP}"
+          codesign --verify --deep --strict "${APP}"
+          echo "codesign --verify --deep --strict: OK (adhoc signed, not 'damaged')"
+
+      - name: Package macOS dmg from the signed app
+        if: runner.os == 'macOS'
+        run: npx tauri build --bundles dmg
 
       - name: Smoke-test the packaged runtime (process-level acceptance)
         run: node scripts/smoke-test.mjs
