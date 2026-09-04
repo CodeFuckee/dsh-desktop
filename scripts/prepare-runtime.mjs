@@ -127,7 +127,10 @@ function extractNodeArchive(archive, target, exe) {
       if (unzip.status !== 0) throw new Error(`unzip failed (${archive})`)
       nodePath = walkForExecutable(staging, exe)
     } else {
-      const tar = spawnSync('tar', ['-xaf', archive, '-C', staging], { stdio: 'inherit' })
+      // -z for gzip / -J for xz: both BSD tar (macOS) and GNU tar (Linux) accept
+      // these; the GNU-only `-a` autodetect flag must be avoided.
+      const flags = archive.endsWith('.tar.xz') ? ['-xJf'] : ['-xzf']
+      const tar = spawnSync('tar', [...flags, archive, '-C', staging], { stdio: 'inherit' })
       if (tar.status !== 0) throw new Error(`tar extraction failed (${archive})`)
       nodePath = walkForExecutable(staging, exe)
     }
@@ -159,6 +162,27 @@ const ALLOWED_SCRIPTS = [
   '@google/genai',
 ]
 
+/** Locate npm's CLI entry so npm always runs as `node <npm-cli>.js` — this
+ *  avoids .cmd/PATH resolution differences across CI runners and npm
+ *  versions and makes failures attributable to the exact npm in use. */
+function npmCliPath() {
+  const execDir = dirname(process.execPath)
+  const candidates = [
+    join(execDir, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+    join(execDir, '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+    join(execDir, '..', 'lib', 'node_modules', 'npm', 'cli.js'),
+  ]
+  const globalRoot = spawnSync(IS_WINDOWS ? 'npm.cmd' : 'npm', ['root', '-g'], { encoding: 'utf8' })
+  if (globalRoot.status === 0) {
+    candidates.push(join(globalRoot.stdout.trim(), 'npm', 'bin', 'npm-cli.js'))
+    candidates.push(join(globalRoot.stdout.trim(), 'npm', 'cli.js'))
+  }
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate
+  }
+  throw new Error('npm CLI not found next to node: ' + process.execPath)
+}
+
 function installDsh() {
   const appDir = join(RUNTIME_DIR, 'app')
   mkdirSync(appDir, { recursive: true })
@@ -177,11 +201,18 @@ function installDsh() {
   )
   writeFileSync(join(appDir, '.npmrc'), `allow-scripts=${ALLOWED_SCRIPTS.join(',')}\n`)
   log(`npm install @deepseek-ai/dsh@${DSH_VERSION} (prefix ${appDir})`)
-  const run = spawnSync(IS_WINDOWS ? 'npm.cmd' : 'npm', ['install', '--prefix', appDir, '--no-audit', '--no-fund'], {
-    stdio: 'inherit',
+  const npmCli = npmCliPath()
+  log(`using npm at ${npmCli}`)
+  const run = spawnSync(process.execPath, [npmCli, 'install', '--prefix', appDir, '--no-audit', '--no-fund'], {
+    encoding: 'utf8',
     env: { ...process.env, npm_config_update_notifier: 'false' },
   })
-  if (run.status !== 0) throw new Error('npm install of @deepseek-ai/dsh failed')
+  if (run.status !== 0) {
+    // Surface npm's own error text: it is the diagnosis for CI failures.
+    const out = ((run.stdout ?? '') + '\n' + (run.stderr ?? '')).trim()
+    const tail = out.split(/\r?\n/u).slice(-25).join('\n')
+    throw new Error(`npm install of @deepseek-ai/dsh failed (exit ${run.status})\n${tail}`)
+  }
   verifyNativeModules(appDir)
 }
 
@@ -238,7 +269,9 @@ async function main() {
   rmSync(RUNTIME_DIR, { recursive: true, force: true })
   mkdirSync(RUNTIME_DIR, { recursive: true })
 
-  const archive = join(RUNTIME_DIR, `${dist.file}.dwl`)
+  // Keep the archive under its real name so the extractor can branch on the
+  // extension (a `.dwl` suffix would otherwise force the tar path for zips).
+  const archive = join(RUNTIME_DIR, dist.file)
   await downloadNodeArchive(dist.file, archive)
   await extractNodeArchive(archive, target, dist.exe)
   rmSync(archive, { force: true })
