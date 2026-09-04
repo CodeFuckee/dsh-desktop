@@ -1,5 +1,7 @@
 # dsh-desktop
 
+[![build-desktop](https://github.com/CodeFuckee/dsh-desktop/actions/workflows/build-desktop.yml/badge.svg)](https://github.com/CodeFuckee/dsh-desktop/actions/workflows/build-desktop.yml)
+
 将 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（`dsh`）封装为桌面应用的仓库：基于 **Tauri v2**，
 内置真实的 `dsh web` 本地服务器（npm 发布包 `@deepseek-ai/dsh`），用系统 WebView 把 Web GUI 装进原生窗口。
 支持 **Windows、Linux、macOS** 三平台，一键安装、双击即用、完全离线运行（仅用户自己的 LLM API 需要网络）。
