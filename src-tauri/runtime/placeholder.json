@@ -1,0 +1,4 @@
+{
+  "placeholder": true,
+  "note": "Keep tauri-build's bundle.resources directory ('runtime') satisfiable before scripts/prepare-runtime.mjs fills the real runtime tree (node + app/node_modules)."
+}
