@@ -1,0 +1,21 @@
+{
+  "name": "dsh-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DeepSeek Harness desktop wrapper (Tauri) for Windows, Linux and macOS",
+  "type": "module",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "prepare:runtime": "node scripts/prepare-runtime.mjs",
+    "prepare:runtime:force": "node scripts/prepare-runtime.mjs --force",
+    "smoke": "node scripts/smoke-test.mjs",
+    "gen:icon": "node scripts/gen-icon.mjs && tauri icon scripts/assets/icon-source.png",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

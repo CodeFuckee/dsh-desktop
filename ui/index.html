@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DeepSeek Harness Desktop</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="stage">
+      <!-- Starting view (default) -->
+      <section id="view-starting" class="view">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="64" height="64" role="img">
+            <defs>
+              <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#4d6bfe" />
+                <stop offset="1" stop-color="#8b7bff" />
+              </linearGradient>
+            </defs>
+            <circle cx="24" cy="24" r="21" fill="url(#g)" />
+            <path
+              d="M15 30 V18 a9 9 0 0 1 18 0 V30 H24 V21.5 a3.5 3.5 0 0 0 -7 0 V30 Z"
+              fill="#fff"
+              opacity="0.95"
+            />
+          </svg>
+        </div>
+        <h1 class="stage-title">DeepSeek Harness</h1>
+        <p class="stage-sub">正在启动本地服务，请稍候…</p>
+        <div class="spinner" aria-label="loading"></div>
+        <p class="stage-hint">首次启动可能需要几秒钟</p>
+      </section>
+
+      <!-- Error view (activated by the Rust host via __dshDesktopError) -->
+      <section id="view-error" class="view hidden">
+        <div class="error-mark" aria-hidden="true">!</div>
+        <h1 class="stage-title">启动失败</h1>
+        <p class="stage-sub" id="error-summary">DeepSeek Harness 本地服务未能启动。</p>
+        <pre class="error-detail" id="error-detail"></pre>
+        <button id="error-close" class="ghost-button">关闭应用</button>
+      </section>
+    </main>
+    <script src="main.js"></script>
+  </body>
+</html>

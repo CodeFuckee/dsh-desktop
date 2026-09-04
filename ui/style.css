@@ -1,0 +1,139 @@
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #4d6bfe;
+  --danger: #f85149;
+  --border: #30363d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei",
+    "Noto Sans CJK SC", sans-serif;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(77, 107, 254, 0.16), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+.stage {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px;
+  text-align: center;
+}
+
+.view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 560px;
+}
+
+.view.hidden {
+  display: none;
+}
+
+.brand-mark svg {
+  filter: drop-shadow(0 6px 18px rgba(77, 107, 254, 0.35));
+}
+
+.stage-title {
+  margin: 8px 0 0;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+.stage-sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.stage-hint {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  margin-top: 14px;
+  border: 3px solid rgba(230, 237, 243, 0.15);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-mark {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--danger);
+  border-radius: 50%;
+}
+
+.error-detail {
+  width: 100%;
+  max-height: 200px;
+  margin: 6px 0 0;
+  padding: 12px;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  user-select: text;
+}
+
+.ghost-button {
+  margin-top: 8px;
+  padding: 9px 22px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ghost-button:hover {
+  border-color: var(--accent);
+}
