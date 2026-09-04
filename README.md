@@ -13,7 +13,7 @@
 
 ## 安装包
 
-在 [Releases](https://github.com/your-org/dsh-desktop/releases) 页面下载对应平台安装包：
+在 [Releases](https://github.com/CodeFuckee/dsh-desktop/releases) 页面下载对应平台安装包：
 
 | 平台 | 格式 |
 | --- | --- |
@@ -29,7 +29,7 @@
 （`libwebkit2gtk-4.1-dev` 等，见 `docs/build.md`）。
 
 ```sh
-git clone --recurse-submodules https://github.com/your-org/dsh-desktop.git
+git clone --recurse-submodules https://github.com/CodeFuckee/dsh-desktop.git
 cd dsh-desktop
 
 npm install                # 安装 @tauri-apps/cli
