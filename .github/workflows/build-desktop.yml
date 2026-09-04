@@ -16,7 +16,10 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            bundles: deb,appimage
+            # AppImage bundling via linuxdeploy is flaky on ubuntu-22.04 CI
+            # runners (see README "已知限制"); deb is the reliable Linux
+            # installer. Build AppImage locally where the toolchain works.
+            bundles: deb
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             bundles: nsis

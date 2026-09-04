@@ -61,7 +61,9 @@ Rust 侧用 `app.path().resource_dir()` 定位；开发模式经 `DSH_DESKTOP_RU
 
 ## 5. 已知边界（v1）
 
-- 平台矩阵：Windows x64 / Linux x64 / macOS arm64；其余架构待后续
+- 平台矩阵：Windows x64（NSIS）/ Linux x64（deb）/ macOS arm64（dmg）；其余架构待后续
+- Linux AppImage：本地可构建（`tauri build --bundles appimage`）；CI 的 ubuntu-22.04 上
+  linuxdeploy 工具链不稳定，暂不纳入 CI 产物
 - 安装包未签名：macOS Gatekeeper、Windows SmartScreen 需用户手动放行
 - Linux AppImage 目标机需 WebKitGTK 运行时；Windows 10 需 WebView2 Runtime
 - WebView 一致性依赖各平台系统 WebView（WebKitGTK / WebView2 / WKWebView）

@@ -21,9 +21,12 @@
 | --- | --- |
 | Windows | `DeepSeek-Harness-Desktop-<version>-x64-setup.exe`（NSIS） |
 | macOS (Apple Silicon) | `DeepSeek-Harness-Desktop_<version>_aarch64.dmg` |
-| Linux (x64) | `.deb`（Debian/Ubuntu）或 `.AppImage` |
+| Linux (x64) | `.deb`（Debian/Ubuntu） |
 
 > v1 安装包**未签名**：macOS 首次打开请右键 →「打开」；Windows SmartScreen 提示时选择「仍要运行」。
+>
+> Linux 还可用 `npx tauri build --bundles appimage` 在本地生成 AppImage（CI 上 linuxdeploy 在
+> ubuntu-22.04 不稳定，见「已知限制」）。
 
 ## 从源码开发
 
@@ -63,7 +66,9 @@ npx tauri build --bundles dmg                  # Windows: nsis；Linux: deb,appi
 
 ## 常见问题
 
-- **Linux 双击 AppImage 无反应**：目标机需安装 WebKitGTK：`sudo apt install libwebkit2gtk-4.1-0`；Debian 系推荐 `.deb`。
+- **Linux 双击 AppImage 无反应 / 无 AppImage**：目标机需安装 WebKitGTK（`sudo apt install libwebkit2gtk-4.1-0`）；
+  Debian 系推荐 `.deb`。AppImage 需要本地构建：`npx tauri build --bundles appimage`（CI 上
+  linuxdeploy 工具链在 ubuntu-22.04 runner 不稳定，暂不在 CI 出 AppImage）。
 - **Windows 提示缺少 WebView2**：Windows 11 自带；Windows 10 需安装
   [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
 - **端口冲突**：应用固定使用 `--port 0`（OS 自动分配），无需担心。
