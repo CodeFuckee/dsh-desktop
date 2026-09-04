@@ -83,5 +83,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
+          # Only installer artifacts — a broad `bundle/**/*` glob picks up
+          # bundler staging debris (node_modules trees etc.).
           files: |
-            src-tauri/target/release/bundle/**/*
+            src-tauri/target/release/bundle/*/*.dmg
+            src-tauri/target/release/bundle/*/*.deb
+            src-tauri/target/release/bundle/*/*.exe
+            src-tauri/target/release/bundle/*/*.msi
+            src-tauri/target/release/bundle/*/*.AppImage
