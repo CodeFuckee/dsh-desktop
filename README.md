@@ -24,9 +24,6 @@
 | Linux (x64) | `.deb`（Debian/Ubuntu） |
 
 > v1 安装包**未签名**：macOS 首次打开请右键 →「打开」；Windows SmartScreen 提示时选择「仍要运行」。
->
-> Linux 还可用 `npx tauri build --bundles appimage` 在本地生成 AppImage（CI 上 linuxdeploy 在
-> ubuntu-22.04 不稳定，见「已知限制」）。
 
 ## 从源码开发
 
@@ -66,6 +63,23 @@ npx tauri build --bundles dmg                  # Windows: nsis；Linux: deb,appi
 
 ## 常见问题
 
+- **macOS 提示「已损坏，无法打开」**：这是对未签名应用的 Gatekeeper 隔离提示。清除隔离属性后即可打开：
+
+  ```sh
+  xattr -cr "/Applications/DeepSeek Harness Desktop.app"
+  open "/Applications/DeepSeek Harness Desktop.app"
+  ```
+
+  仍失败时先临时签名再打开（应用本身已带 ad-hoc 签名，此命令用于旧安装包）：
+
+  ```sh
+  codesign --force --deep -s - "/Applications/DeepSeek Harness Desktop.app"
+  xattr -cr "/Applications/DeepSeek Harness Desktop.app"
+  open "/Applications/DeepSeek Harness Desktop.app"
+  ```
+
+  或在 Finder 中右键应用 →「打开」→ 点「打开」。从 v0.1.0（含）起安装包内置
+  ad-hoc 代码签名，一般只出现「无法验证开发者，仍要打开」的确认提示，不再报「已损坏」。
 - **Linux 双击 AppImage 无反应 / 无 AppImage**：目标机需安装 WebKitGTK（`sudo apt install libwebkit2gtk-4.1-0`）；
   Debian 系推荐 `.deb`。AppImage 需要本地构建：`npx tauri build --bundles appimage`（CI 上
   linuxdeploy 工具链在 ubuntu-22.04 runner 不稳定，暂不在 CI 出 AppImage）。

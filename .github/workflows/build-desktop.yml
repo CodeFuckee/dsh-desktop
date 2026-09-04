@@ -71,6 +71,22 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: "1"
         run: npx tauri build --bundles ${{ matrix.bundles }}
 
+      - name: Verify macOS code signature (regression: Gatekeeper "damaged" error)
+        if: runner.os == 'macOS'
+        run: |
+          APP="$(
+            find src-tauri/target/release/bundle -maxdepth 4 \
+              -name "*.app" -type d | head -1
+          )"
+          echo "verifying: $APP"
+          codesign -dv "$APP" | grep -E "Identifier|Signature|flags" || true
+          codesign --verify --deep --strict "$APP"
+          echo "codesign --verify --deep --strict: OK"
+          # The quarantine is added by the browser at download time; the app
+          # itself must be signed. spctl reports 'rejected' for ad-hoc, which
+          # is expected — the regression guard is codesign verification above.
+          spctl -a -vv "$APP" || true
+
       - name: Smoke-test the packaged runtime (process-level acceptance)
         run: node scripts/smoke-test.mjs
 

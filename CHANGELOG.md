@@ -21,3 +21,10 @@
   - 测试：URL 行解析（跨 chunk、\r\n、LAN 后缀、无关行、空 URL）、运行时解析（缺失 node / 缺失
     dsh 入口 / env 覆盖 / dev 回退 / 中文空格路径）、spawn 参数、stderr 环形缓冲、进程树终止、
     进程级冒烟测试（真实拉起 dsh web 并校验 `__DSH_BOOT__`）
+
+### Fixed
+
+- **macOS Gatekeeper「已损坏，无法打开」**：macOS 安装包改为 ad-hoc 代码签名
+  （`bundle.macOS.signingIdentity: "-"`），下载后不再报「已损坏」，仅出现标准的
+  「无法验证开发者」确认提示；CI 增加 `codesign --verify --deep --strict` 签名校验步骤。
+  README 补充隔离属性清除命令（`xattr -cr …`）与旧包临时签名方法。
