@@ -71,7 +71,7 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: "1"
         run: npx tauri build --bundles ${{ matrix.bundles }}
 
-      - name: Verify macOS code signature (regression: Gatekeeper "damaged" error)
+      - name: Verify macOS code signature (Gatekeeper damaged-app regression)
         if: runner.os == 'macOS'
         run: |
           APP="$(
