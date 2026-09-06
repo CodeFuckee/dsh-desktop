@@ -81,8 +81,10 @@ fn navigate_with_retry(window: &WebviewWindow, url: &str) -> bool {
             return false;
         }
     };
+    eprintln!("dsh-desktop: navigating to {url}");
     for attempt in 0..NAVIGATE_RETRIES {
         if window.navigate(parsed.clone()).is_ok() {
+            eprintln!("dsh-desktop: navigate() accepted on attempt {attempt}");
             return true;
         }
         if attempt + 1 < NAVIGATE_RETRIES {
@@ -90,6 +92,56 @@ fn navigate_with_retry(window: &WebviewWindow, url: &str) -> bool {
         }
     }
     false
+}
+
+/// Monitor the webview after navigating to the launch-token URL.
+///
+/// The dsh browser-trust fence serves the GUI only after the browser-token
+/// exchange completes (303 + session cookie -> clean `/`). If the webview's
+/// first request arrives before the fence is fully mounted, the server
+/// answers 401 ("dsh web authentication required") and the URL stays at
+/// `/?token=...`. WKWebView/wry keep the cookie from a completed exchange,
+/// so re-running the exchange is safe and converges.
+///
+/// Polls the webview URL (never unwrapping — wry can panic when the webview
+/// has no committed URL) and re-navigates while the token query persists.
+fn monitor_navigation(app: &AppHandle, token_url: String) {
+    let debug = std::env::var_os("DSH_DESKTOP_DEBUG").is_some();
+    let app = app.clone();
+    thread::spawn(move || {
+        for round in 0..12u32 {
+            std::thread::sleep(Duration::from_millis(1500));
+            let Some(window) = app.get_webview_window("main") else { return };
+            let observed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| window.url().ok()))
+                .ok()
+                .flatten();
+            let Some(current) = observed else {
+                if debug {
+                    eprintln!("dsh-desktop: [debug] round {round}: webview url unavailable");
+                }
+                continue;
+            };
+            let current_str = current.to_string();
+            if debug {
+                eprintln!("dsh-desktop: [debug] round {round} webview url = {current_str}");
+            }
+            if current_str.contains("token=") {
+                // Exchange did not complete; the fence accepts the same
+                // launch token again, so re-navigate to re-run it.
+                eprintln!("dsh-desktop: auth exchange incomplete, retrying ({round})");
+                if window.navigate(current).is_err() {
+                    return; // webview is gone
+                }
+                continue;
+            }
+            if debug {
+                eprintln!("dsh-desktop: [debug] auth exchange complete at `{current_str}`");
+            }
+            // Clean `/`: the exchange finished; stop watching.
+            let _ = token_url;
+            return;
+        }
+    });
 }
 
 /// Start `dsh web` and supervise it: parse the readiness URL, forward stderr,
@@ -166,6 +218,7 @@ fn start_server(app: AppHandle, paths: server::RuntimePaths) {
                     url_announced = true;
                     if let Some(window) = app.get_webview_window("main") {
                         if navigate_with_retry(&window, &url) {
+                            monitor_navigation(&app, url.clone());
                             continue;
                         }
                     }
