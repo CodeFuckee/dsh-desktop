@@ -28,3 +28,8 @@
   （`bundle.macOS.signingIdentity: "-"`），下载后不再报「已损坏」，仅出现标准的
   「无法验证开发者」确认提示；CI 增加 `codesign --verify --deep --strict` 签名校验步骤。
   README 补充隔离属性清除命令（`xattr -cr …`）与旧包临时签名方法。
+- **WebView 偶发停在「dsh web authentication required」**：WebView 首请求若早于浏览器
+  鉴权 fence 就绪会收到 401；新增导航监视器（轮询 WebView URL 并做 `catch_unwind`
+  防护），检测到 token 交换未完成（URL 仍带 `token=`）时自动以同一启动 token 重新
+  导航重试，直至落在干净 `/`。复现验证：直接流程 4/4 收敛；代理观测确认 wry 完整
+  走通 303→cookie→200。
